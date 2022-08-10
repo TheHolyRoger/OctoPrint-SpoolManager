@@ -911,7 +911,7 @@ $(function() {
         self.filesViewModel.getAdditionalData = function addFilamentWeight(data) {
             const additionalData = self.originalGetAdditionalData(data);
 
-            var dataLines = additionalData.split(/\n/);
+            var dataLines = additionalData.split(/<br>/);
 
             var dataLength = dataLines.length;
             const spoolInfo = self.api_getSelectedSpoolInformations();
@@ -920,15 +920,15 @@ $(function() {
                     const filament = data["gcodeAnalysis"]["filament"]["tool" + 0];
                     if (filament && filament.hasOwnProperty("volume") && filament.volume) {
                         const density = spoolInfo[0]["density"];
-                        const weight = density * filament.volume;
+                        const weight = Math.round((density * filament.volume) * 100) / 100;
                         if (weight > 0) {
-                            dataLines[i] = dataLines[i] + " / " + "%(weight).02fg";
+                            dataLines[i] = dataLines[i] + " / " + weight + "g";
                         }
                     }
                 }
             }
 
-            return dataLines.join("\n");
+            return dataLines.join("<br>");
         };
 
         // overwrite loadFile
