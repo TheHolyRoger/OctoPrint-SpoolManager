@@ -905,6 +905,32 @@ $(function() {
                     });
                 });
         };
+        // overwrite getAdditionalData
+        self.originalGetAdditionalData = self.filesViewModel.getAdditionalData;
+
+        self.filesViewModel.getAdditionalData = function addFilamentWeight(data) {
+            const additionalData = self.originalGetAdditionalData(data);
+
+            var dataLines = additionalData.split(/\n/);
+
+            var dataLength = dataLines.length;
+            const spoolInfo = self.api_getSelectedSpoolInformations();
+            for (var i = 0; i < dataLength; i++) {
+                if (spoolInfo.length && dataLines[i].includes("Filament:")) {
+                    const filament = data["gcodeAnalysis"]["filament"]["tool" + 0];
+                    if (filament && filament.hasOwnProperty("volume") && filament.volume) {
+                        const density = spoolInfo[0]["density"];
+                        const weight = density * filament.volume;
+                        if (weight > 0) {
+                            dataLines[i] = dataLines[i] + " / " + "%(weight).02fg";
+                        }
+                    }
+                }
+            }
+
+            return dataLines.join("\n");
+        };
+
         // overwrite loadFile
         self.filesViewModel.loadFile = function confirmSpoolSelectionOnLoadAndPrint(data, printAfterLoad) {
             // orig. SourceCode
